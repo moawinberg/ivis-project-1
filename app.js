@@ -148,13 +148,12 @@ d3.csv("data/data2.csv", function (raw_data) {
     .each(function (d) { d3.select(this).call(axis.scale(yscale[d])); })
     .append("svg:text")
     .attr("text-anchor", "middle")
-    .attr("y", function (d, i) { return i % 2 == 0 ? -20 : -40 })
+    .attr("y", function (d, i) { return i % 2 == 0 ? -25 : -50 })
     .attr("x", 0)
     .attr("class", "label")
     // .attr("transform", "rotate(-10)")
     .text(String)
     .append("title")
-    .text("Click to invert. Drag to reorder");
 
   // Add and store a brush for each axis.
   g.append("svg:g")
@@ -165,11 +164,9 @@ d3.csv("data/data2.csv", function (raw_data) {
     .attr("x", -23)
     .attr("width", 36)
     .append("title")
-    .text("Drag up or down to brush along this axis");
 
   g.selectAll(".extent")
     .append("title")
-    .text("Drag or resize this filter");
 
   legend = create_legend(colors, brush);
 
@@ -177,12 +174,48 @@ d3.csv("data/data2.csv", function (raw_data) {
 
 });
 
+function wrap(text, width) {
+  text.each(function () {
+    var text = d3.select(this),
+      words = text.text().split(/\s+/).reverse(),
+      word,
+      line = [],
+      lineNumber = 0,
+      lineHeight = 1.1, // ems
+      x = text.attr('x'),
+      y = text.attr('y'),
+      dy = 0, //parseFloat(text.attr('dy')),
+      tspan = text.text(null)
+        .append('tspan')
+        .attr('x', x)
+        .attr('y', y)
+        .attr('dy', dy + 'em');
+    while (word = words.pop()) {
+      line.push(word);
+      tspan.text(line.join(' '));
+      if (tspan.node().getComputedTextLength() > width) {
+        line.pop();
+        tspan.text(line.join(' '));
+        line = [word];
+        tspan = text.append('tspan')
+          .attr('x', x)
+          .attr('y', y)
+          .attr('dy', ++lineNumber * lineHeight + dy + 'em')
+          .text(word);
+      }
+    }
+  });
+}
+
+
 function create_legend(colors, brush) {
   // create legend
   var legend_data = d3.select("#legend")
     .html("")
     .selectAll(".row")
     .data(_.keys(colors).sort())
+
+  d3.selectAll('.label').call(wrap, 120);
 
   // filter by group
   var legend = legend_data
